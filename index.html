@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Selector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2196f3">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <style>
+    :root {
+      --primary: #2196f3;
+      --success: #4caf50;
+      --danger: #f44336;
+      --warning: #ff9800;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 4vw;
+      background: #f0f2f5;
+      text-align: center;
+      color: #333;
+    }
+
+    h1 { font-size: 8vw; margin-bottom: 10px; }
+    
+    .status-bar {
+      font-size: 3vw;
+      color: #666;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: white;
+      border-radius: 20px;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .section-container {
+      background: white;
+      margin: 5vw auto;
+      max-width: 500px;
+      padding: 5vw;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Custom Dropdown Styles */
+    .custom-select {
+      width: 100%;
+      background: #fff;
+      border: 2px solid var(--primary);
+      padding: 4vw;
+      font-size: 5vw;
+      cursor: pointer;
+      border-radius: 10px;
+      box-sizing: border-box;
+      position: relative;
+      font-weight: bold;
+    }
+
+    .custom-options {
+      display: none;
+      background: #fff;
+      border: 2px solid var(--primary);
+      border-top: none;
+      max-height: 250px;
+      overflow-y: auto;
+      width: 100%;
+      margin: 0 auto;
+      border-radius: 0 0 10px 10px;
+      z-index: 100;
+      position: relative;
+    }
+
+    .custom-option {
+      padding: 4vw;
+      font-size: 5vw;
+      border-top: 1px solid #eee;
+    }
+
+    /* Action Buttons */
+    .btn {
+      color: white;
+      text-align: center;
+      padding: 4vw;
+      font-size: 5vw;
+      margin-top: 15px;
+      cursor: pointer;
+      border-radius: 10px;
+      font-weight: bold;
+      transition: transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .next-btn { background: var(--primary); display: block; width: 100%; }
+    
+    .small-btn-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .small-btn { flex: 1; padding: 3vw; font-size: 3.5vw; }
+    .delete-btn { background: var(--danger); }
+    .reset-btn { background: var(--warning); }
+    .sync-btn { background: var(--success); margin-bottom: 20px; }
+
+    /* Result Animation */
+    .student-box {
+      margin: 20px 0;
+      font-weight: 800;
+      font-size: 8vw;
+      color: #1a1a1a;
+      min-height: 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pop-in {
+      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .active-section { border-color: var(--success); color: var(--success); }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 Selector</h1>
+  
+  <div class="btn sync-btn" onclick="loadFromSheets()">🔄 Sync List</div>
+  <div id="status" class="status-bar">Connecting to Google...</div>
+
+  <div class="section-container">
+    <div id="section1" class="custom-select" onclick="toggleOptions('section1')">Select Section</div>
+    <div id="section1-options" class="custom-options"></div>
+    
+    <div class="btn next-btn" onclick="nextStudent('section1')">NEXT STUDENT</div>
+    
+    <div class="small-btn-row">
+      <div class="btn small-btn delete-btn" onclick="deleteStudent('section1')">Absent</div>
+      <div class="btn small-btn reset-btn" onclick="resetPool('section1')">Reset Pool</div>
+    </div>
+    
+    <div id="student1" class="student-box">---</div>
+  </div>
+
+  <div class="section-container">
+    <div id="section2" class="custom-select" onclick="toggleOptions('section2')">Select Section</div>
+    <div id="section2-options" class="custom-options"></div>
+    
+    <div class="btn next-btn" onclick="nextStudent('section2')">NEXT STUDENT</div>
+    
+    <div class="small-btn-row">
+      <div class="btn small-btn delete-btn" onclick="deleteStudent('section2')">Absent</div>
+      <div class="btn small-btn reset-btn" onclick="resetPool('section2')">Reset Pool</div>
+    </div>
+    
+    <div id="student2" class="student-box">---</div>
+  </div>
+
+  <script>
+    // YOUR GOOGLE SHEET CSV URL
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9nE9pp-Lk2y4nS7WFocx5P8tW2pJjw6m9t95n78accs0-9GymgaoG3d0Mfg4hiS8x3LFoYhkqVS7C/pub?output=csv";
+    
+    let masterData = {}; // Stores { "SectionName": ["Student A", "Student B"] }
+    const selectorIds = ["section1", "section2"];
+
+    async function loadFromSheets() {
+      const status = document.getElementById('status');
+      status.textContent = "Syncing...";
+      
+      try {
+        const response = await fetch(CSV_URL);
+        const text = await response.text();
+        const rows = text.split('\n').slice(1); // Skip header row
+
+        masterData = {};
+        rows.forEach(row => {
+          const cols = row.split(',').map(c => c.replace(/"/g, "").trim());
+          if (cols.length >= 3) {
+            const name = `${cols[1]} ${cols[0]}`; // First Last
+            const sec = cols[2];
+            if (!masterData[sec]) masterData[sec] = [];
+            masterData[sec].push(name);
+          }
+        });
+
+        // Save to cache
+        Object.keys(masterData).forEach(s => localStorage.setItem(s + "_master", JSON.stringify(masterData[s])));
+        
+        setupUI();
+        status.textContent = "Synced: " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      } catch (e) {
+        status.textContent = "Offline Mode Active";
+        loadFromLocalStorage();
+      }
+    }
+
+    function loadFromLocalStorage() {
+      Object.keys(localStorage).forEach(key => {
+        if (key.endsWith("_master")) {
+          const sec = key.replace("_master", "");
+          masterData[sec] = JSON.parse(localStorage.getItem(key));
+        }
+      });
+      setupUI();
+    }
+
+    function setupUI() {
+      selectorIds.forEach(id => {
+        const optDiv = document.getElementById(id + "-options");
+        optDiv.innerHTML = "";
+        
+        Object.keys(masterData).sort().forEach(sec => {
+          const div = document.createElement('div');
+          div.className = 'custom-option';
+          div.textContent = sec;
+          div.onclick = () => selectSection(id, sec);
+          optDiv.appendChild(div);
+        });
+
+        const lastSec = localStorage.getItem(id) || Object.keys(masterData)[0];
+        if (lastSec) selectSection(id, lastSec);
+      });
+    }
+
+    function selectSection(id, sec) {
+      document.getElementById(id).textContent = sec;
+      document.getElementById(id + "-options").style.display = "none";
+      localStorage.setItem(id, sec);
+      const lastPick = localStorage.getItem(sec + "_last") || "Ready";
+      document.getElementById("student" + id.slice(-1)).textContent = lastPick;
+    }
+
+    function toggleOptions(id) {
+      const el = document.getElementById(id + "-options");
+      const isVisible = el.style.display === "block";
+      document.querySelectorAll('.custom-options').forEach(d => d.style.display = 'none');
+      el.style.display = isVisible ? "none" : "block";
+    }
+
+    function nextStudent(id) {
+      const sec = document.getElementById(id).textContent;
+      if (!masterData[sec]) return;
+
+      const poolKey = sec + "_pool";
+      let pool = JSON.parse(localStorage.getItem(poolKey)) || [];
+
+      if (pool.length === 0) pool = [...masterData[sec]];
+
+      const idx = Math.floor(Math.random() * pool.length);
+      const picked = pool.splice(idx, 1)[0];
+
+      localStorage.setItem(poolKey, JSON.stringify(pool));
+      localStorage.setItem(sec + "_last", picked);
+
+      const box = document.getElementById("student" + id.slice(-1));
+      box.textContent = picked;
+      box.classList.remove("pop-in");
+      void box.offsetWidth; // Trigger reflow
+      box.classList.add("pop-in");
+    }
+
+    function deleteStudent(id) {
+      const sec = document.getElementById(id).textContent;
+      const last = localStorage.getItem(sec + "_last");
+      if (!last || last === "Ready") return;
+
+      if (confirm(`Remove ${last} for this session?`)) {
+        masterData[sec] = masterData[sec].filter(s => s !== last);
+        let pool = JSON.parse(localStorage.getItem(sec + "_pool")) || [];
+        pool = pool.filter(s => s !== last);
+        localStorage.setItem(sec + "_pool", JSON.stringify(pool));
+        document.getElementById("student" + id.slice(-1)).textContent = "---";
+      }
+    }
+
+    function resetPool(id) {
+      const sec = document.getElementById(id).textContent;
+      if (confirm(`Reset pool for ${sec}?`)) {
+        localStorage.removeItem(sec + "_pool");
+        document.getElementById("student" + id.slice(-1)).textContent = "Reset!";
+      }
+    }
+
+    // Close dropdowns on outside click
+    window.onclick = (e) => {
+      if (!e.target.matches('.custom-select')) {
+        document.querySelectorAll('.custom-options').forEach(d => d.style.display = 'none');
+      }
+    };
+
+    // Register Service Worker for PWA
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(console.error);
+    }
+
+    loadFromSheets();
+  </script>
+</body>
+</html>
