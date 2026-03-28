@@ -17,6 +17,8 @@
       --bg: #f8f9fa;
     }
 
+    * { box-sizing: border-box; } /* Prevents alignment issues globally */
+
     body {
       font-family: -apple-system, system-ui, sans-serif;
       padding: 5vw;
@@ -25,12 +27,27 @@
       margin: 0;
     }
 
-    h1 { font-size: 7vw; margin: 20px 0 10px; }
+    h1 { font-size: 7vw; margin: 20px 0 10px; color: #333; }
 
-    /* History & Activity Styles */
+    /* Sync Button & Status */
+    .sync-btn {
+      background: var(--success);
+      color: white;
+      padding: 10px 20px;
+      font-size: 3.5vw;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .status-text { font-size: 3vw; color: #888; margin-bottom: 20px; display: block; }
+
+    /* History Log */
     .history-container {
       background: #fff;
-      margin: 10px auto 20px;
+      margin: 0 auto 20px;
       max-width: 500px;
       border-radius: 12px;
       padding: 15px;
@@ -39,49 +56,50 @@
       text-align: left;
     }
 
-    .history-title {
-      font-size: 3.5vw;
-      font-weight: bold;
-      color: #666;
-      margin-bottom: 8px;
-      display: block;
-      text-transform: uppercase;
-    }
-
-    .history-item {
-      font-size: 3.8vw;
-      padding: 5px 0;
-      border-bottom: 1px solid #f1f1f1;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .history-item:last-child { border-bottom: none; }
+    .history-title { font-size: 3.2vw; font-weight: bold; color: #999; text-transform: uppercase; }
+    .history-item { font-size: 3.8vw; padding: 6px 0; border-bottom: 1px solid #f8f8f8; display: flex; justify-content: space-between; }
     .history-tag { color: var(--primary); font-weight: bold; }
 
+    /* Section Containers */
     .section-container {
       background: white;
-      margin-bottom: 30px;
+      margin: 0 auto 30px;
       max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 25px;
+      padding: 25px 15px;
       border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    /* Unified Button Sizing */
+    .custom-select, .next-btn {
+      width: 100%; /* Relative to the container padding */
+      margin: 10px 0;
+      padding: 18px;
+      font-size: 5vw;
+      font-weight: bold;
+      border-radius: 12px;
+      display: block;
+      cursor: pointer;
+      transition: transform 0.1s;
     }
 
     .custom-select {
-      width: 100%;
       background: #fff;
       border: 2px solid var(--primary);
-      padding: 15px;
-      font-size: 5vw;
-      cursor: pointer;
-      border-radius: 10px;
-      font-weight: bold;
-      box-sizing: border-box;
+      color: #333;
+      position: relative;
     }
 
+    .next-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+    }
+
+    .next-btn:active { transform: scale(0.97); }
+
+    /* Dropdown Options */
     .custom-options {
       display: none;
       background: #fff;
@@ -89,62 +107,58 @@
       border-top: none;
       max-height: 200px;
       overflow-y: auto;
-      border-radius: 0 0 10px 10px;
+      border-radius: 0 0 12px 12px;
+      margin-top: -12px; /* Pull up to join the select box */
     }
 
-    .custom-option { padding: 15px; border-top: 1px solid #eee; }
+    .custom-option { padding: 15px; border-top: 1px solid #eee; font-size: 4.5vw; }
 
-    .btn {
-      color: white;
-      padding: 18px;
-      font-size: 5vw;
-      margin-top: 15px;
-      cursor: pointer;
-      border-radius: 10px;
-      font-weight: bold;
-      user-select: none;
+    /* Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      margin: 15px 0;
+      overflow: hidden;
     }
+    .progress-fill { width: 0%; height: 100%; background: var(--success); transition: width 0.4s ease; }
 
-    .next-btn { background: var(--primary); width: 100%; display: block; }
-    .sync-btn { background: var(--success); font-size: 3.5vw; padding: 10px 20px; display: inline-block; }
-    
-    .small-btn-row { display: flex; gap: 10px; margin-top: 10px; }
-    .small-btn { flex: 1; padding: 10px; font-size: 3vw; border-radius: 8px; }
+    /* Action Row */
+    .small-btn-row { display: flex; gap: 10px; margin-top: 15px; }
+    .small-btn { flex: 1; padding: 12px; font-size: 3.5vw; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .delete-btn { background: var(--danger); }
     .reset-btn { background: var(--warning); }
 
-    .student-box {
-      margin-top: 20px;
-      font-weight: 800;
-      font-size: 9vw;
-      color: #222;
-      min-height: 1.2em;
-    }
-
+    /* Result Area */
+    .student-box { margin-top: 20px; font-weight: 800; font-size: 9vw; color: #111; min-height: 1.3em; }
     .pop-in { animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
-    @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes pop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
 </head>
 <body>
 
-  <h1>🎓 Student Selector</h1>
+  <h1>🎓 Selector</h1>
   
-  <div class="btn sync-btn" onclick="loadFromSheets()">🔄 Sync from Sheets</div>
+  <div class="sync-btn" onclick="loadFromSheets()">🔄 Sync List</div>
+  <span id="status" class="status-text">Connecting...</span>
 
   <div class="history-container">
     <span class="history-title">Recent Activity</span>
-    <div id="history-log">
-      <div class="history-item" style="color:#aaa">No activity yet...</div>
-    </div>
+    <div id="history-log"><div class="history-item" style="color:#ccc">Waiting for selection...</div></div>
   </div>
 
   <div class="section-container">
     <div id="section1" class="custom-select" onclick="toggle('section1-options')">Select Section</div>
     <div id="section1-options" class="custom-options"></div>
-    <div class="btn next-btn" onclick="nextStudent('section1')">NEXT STUDENT</div>
+    
+    <div class="next-btn" onclick="nextStudent('section1')">NEXT STUDENT</div>
+    
+    <div class="progress-track"><div id="progress1" class="progress-fill"></div></div>
+    
     <div class="small-btn-row">
-      <div class="btn small-btn delete-btn" onclick="absent('section1')">Absent</div>
-      <div class="btn small-btn reset-btn" onclick="resetPool('section1')">Reset Pool</div>
+      <div class="small-btn delete-btn" onclick="absent('section1')">Absent</div>
+      <div class="small-btn reset-btn" onclick="resetPool('section1')">Reset</div>
     </div>
     <div id="student1" class="student-box">---</div>
   </div>
@@ -152,10 +166,14 @@
   <div class="section-container">
     <div id="section2" class="custom-select" onclick="toggle('section2-options')">Select Section</div>
     <div id="section2-options" class="custom-options"></div>
-    <div class="btn next-btn" onclick="nextStudent('section2')">NEXT STUDENT</div>
+    
+    <div class="next-btn" onclick="nextStudent('section2')">NEXT STUDENT</div>
+    
+    <div class="progress-track"><div id="progress2" class="progress-fill"></div></div>
+    
     <div class="small-btn-row">
-      <div class="btn small-btn delete-btn" onclick="absent('section2')">Absent</div>
-      <div class="btn small-btn reset-btn" onclick="resetPool('section2')">Reset Pool</div>
+      <div class="small-btn delete-btn" onclick="absent('section2')">Absent</div>
+      <div class="small-btn reset-btn" onclick="resetPool('section2')">Reset</div>
     </div>
     <div id="student2" class="student-box">---</div>
   </div>
@@ -166,6 +184,8 @@
   let history = JSON.parse(localStorage.getItem("selector_history")) || [];
 
   async function loadFromSheets() {
+    const st = document.getElementById('status');
+    st.textContent = "Syncing...";
     try {
       const res = await fetch(CSV_URL);
       const text = await res.text();
@@ -180,7 +200,8 @@
       });
       Object.keys(master).forEach(k => localStorage.setItem(k + "_m", JSON.stringify(master[k])));
       render();
-    } catch(e) { loadLocal(); }
+      st.textContent = "Last Sync: " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    } catch(e) { loadLocal(); st.textContent = "Offline Mode"; }
   }
 
   function loadLocal() {
@@ -202,11 +223,15 @@
           document.getElementById(id).textContent = s;
           opt.style.display = 'none';
           localStorage.setItem(id, s);
+          updateProgress(id, s);
         };
         opt.appendChild(d);
       });
       const saved = localStorage.getItem(id) || Object.keys(master)[0];
-      if(saved) document.getElementById(id).textContent = saved;
+      if(saved) {
+        document.getElementById(id).textContent = saved;
+        updateProgress(id, saved);
+      }
     });
     updateHistoryUI();
   }
@@ -217,8 +242,7 @@
     let pool = JSON.parse(localStorage.getItem(sec + "_p")) || [];
     if(pool.length === 0) pool = [...master[sec]];
     
-    const idx = Math.floor(Math.random() * pool.length);
-    const picked = pool.splice(idx, 1)[0];
+    const picked = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
     localStorage.setItem(sec + "_p", JSON.stringify(pool));
 
     const box = document.getElementById("student" + id.slice(-1));
@@ -227,38 +251,52 @@
     void box.offsetWidth;
     box.classList.add("pop-in");
 
-    // History Logic
-    const entry = { name: picked, section: sec, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
-    history.unshift(entry);
+    history.unshift({ name: picked, section: sec, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
     if(history.length > 5) history.pop();
     localStorage.setItem("selector_history", JSON.stringify(history));
+    
     updateHistoryUI();
+    updateProgress(id, sec);
   }
 
   function updateHistoryUI() {
     const log = document.getElementById("history-log");
-    if(history.length === 0) return;
-    log.innerHTML = history.map(h => `
-      <div class="history-item">
-        <span>${h.name} <span class="history-tag">(${h.section})</span></span>
-        <span style="color:#999; font-size:3vw">${h.time}</span>
-      </div>
-    `).join('');
+    if(history.length > 0) {
+      log.innerHTML = history.map(h => `
+        <div class="history-item">
+          <span>${h.name} <span class="history-tag">(${h.section})</span></span>
+          <span style="color:#999; font-size:3vw">${h.time}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  function updateProgress(id, sec) {
+    if(!master[sec]) return;
+    const pool = JSON.parse(localStorage.getItem(sec + "_p")) || [];
+    const total = master[sec].length;
+    const called = total - (pool.length === 0 ? 0 : pool.length);
+    const pBar = document.getElementById("progress" + id.slice(-1));
+    pBar.style.width = ((called / total) * 100) + "%";
   }
 
   function absent(id) {
-    const name = document.getElementById("student" + id.slice(-1)).textContent;
+    const box = document.getElementById("student" + id.slice(-1));
     const sec = document.getElementById(id).textContent;
-    if(name === "---" || !confirm(`Remove ${name} from ${sec} for now?`)) return;
-    master[sec] = master[sec].filter(s => s !== name);
+    if(box.textContent === "---" || !confirm(`Mark ${box.textContent} as absent?`)) return;
+    master[sec] = master[sec].filter(s => s !== box.textContent);
     let p = JSON.parse(localStorage.getItem(sec + "_p")) || [];
-    localStorage.setItem(sec + "_p", JSON.stringify(p.filter(s => s !== name)));
-    document.getElementById("student" + id.slice(-1)).textContent = "---";
+    localStorage.setItem(sec + "_p", JSON.stringify(p.filter(s => s !== box.textContent)));
+    box.textContent = "---";
+    updateProgress(id, sec);
   }
 
   function resetPool(id) {
     const sec = document.getElementById(id).textContent;
-    if(confirm(`Refill pool for ${sec}?`)) localStorage.removeItem(sec + "_p");
+    if(confirm(`Reset pool for ${sec}?`)) {
+      localStorage.removeItem(sec + "_p");
+      updateProgress(id, sec);
+    }
   }
 
   function toggle(id) {
