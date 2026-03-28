@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Student Selector</title>
+  <title>Student Selector Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2196f3">
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
 
   <style>
     :root {
@@ -15,50 +14,72 @@
       --success: #4caf50;
       --danger: #f44336;
       --warning: #ff9800;
+      --bg: #f8f9fa;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      padding: 4vw;
-      background: #f0f2f5;
+      font-family: -apple-system, system-ui, sans-serif;
+      padding: 5vw;
+      background: var(--bg);
       text-align: center;
-      color: #333;
+      margin: 0;
     }
 
-    h1 { font-size: 8vw; margin-bottom: 10px; }
-    
-    .status-bar {
-      font-size: 3vw;
-      color: #666;
-      margin-bottom: 20px;
-      padding: 10px;
-      background: white;
-      border-radius: 20px;
-      display: inline-block;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    h1 { font-size: 7vw; margin: 20px 0 10px; }
+
+    /* History & Activity Styles */
+    .history-container {
+      background: #fff;
+      margin: 10px auto 20px;
+      max-width: 500px;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #e0e0e0;
+      text-align: left;
     }
+
+    .history-title {
+      font-size: 3.5vw;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 8px;
+      display: block;
+      text-transform: uppercase;
+    }
+
+    .history-item {
+      font-size: 3.8vw;
+      padding: 5px 0;
+      border-bottom: 1px solid #f1f1f1;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .history-item:last-child { border-bottom: none; }
+    .history-tag { color: var(--primary); font-weight: bold; }
 
     .section-container {
       background: white;
-      margin: 5vw auto;
+      margin-bottom: 30px;
       max-width: 500px;
-      padding: 5vw;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 25px;
       border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
-    /* Custom Dropdown Styles */
     .custom-select {
       width: 100%;
       background: #fff;
       border: 2px solid var(--primary);
-      padding: 4vw;
+      padding: 15px;
       font-size: 5vw;
       cursor: pointer;
       border-radius: 10px;
-      box-sizing: border-box;
-      position: relative;
       font-weight: bold;
+      box-sizing: border-box;
     }
 
     .custom-options {
@@ -66,247 +87,189 @@
       background: #fff;
       border: 2px solid var(--primary);
       border-top: none;
-      max-height: 250px;
+      max-height: 200px;
       overflow-y: auto;
-      width: 100%;
-      margin: 0 auto;
       border-radius: 0 0 10px 10px;
-      z-index: 100;
-      position: relative;
     }
 
-    .custom-option {
-      padding: 4vw;
-      font-size: 5vw;
-      border-top: 1px solid #eee;
-    }
+    .custom-option { padding: 15px; border-top: 1px solid #eee; }
 
-    /* Action Buttons */
     .btn {
       color: white;
-      text-align: center;
-      padding: 4vw;
+      padding: 18px;
       font-size: 5vw;
       margin-top: 15px;
       cursor: pointer;
       border-radius: 10px;
       font-weight: bold;
-      transition: transform 0.1s;
+      user-select: none;
     }
 
-    .btn:active { transform: scale(0.98); }
-
-    .next-btn { background: var(--primary); display: block; width: 100%; }
+    .next-btn { background: var(--primary); width: 100%; display: block; }
+    .sync-btn { background: var(--success); font-size: 3.5vw; padding: 10px 20px; display: inline-block; }
     
-    .small-btn-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .small-btn { flex: 1; padding: 3vw; font-size: 3.5vw; }
+    .small-btn-row { display: flex; gap: 10px; margin-top: 10px; }
+    .small-btn { flex: 1; padding: 10px; font-size: 3vw; border-radius: 8px; }
     .delete-btn { background: var(--danger); }
     .reset-btn { background: var(--warning); }
-    .sync-btn { background: var(--success); margin-bottom: 20px; }
 
-    /* Result Animation */
     .student-box {
-      margin: 20px 0;
+      margin-top: 20px;
       font-weight: 800;
-      font-size: 8vw;
-      color: #1a1a1a;
-      min-height: 1.5em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: 9vw;
+      color: #222;
+      min-height: 1.2em;
     }
 
-    .pop-in {
-      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes pop {
-      0% { transform: scale(0.5); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .active-section { border-color: var(--success); color: var(--success); }
+    .pop-in { animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
+    @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
 </head>
 <body>
 
-  <h1>🎓 Selector</h1>
+  <h1>🎓 Student Selector</h1>
   
-  <div class="btn sync-btn" onclick="loadFromSheets()">🔄 Sync List</div>
-  <div id="status" class="status-bar">Connecting to Google...</div>
+  <div class="btn sync-btn" onclick="loadFromSheets()">🔄 Sync from Sheets</div>
+
+  <div class="history-container">
+    <span class="history-title">Recent Activity</span>
+    <div id="history-log">
+      <div class="history-item" style="color:#aaa">No activity yet...</div>
+    </div>
+  </div>
 
   <div class="section-container">
-    <div id="section1" class="custom-select" onclick="toggleOptions('section1')">Select Section</div>
+    <div id="section1" class="custom-select" onclick="toggle('section1-options')">Select Section</div>
     <div id="section1-options" class="custom-options"></div>
-    
     <div class="btn next-btn" onclick="nextStudent('section1')">NEXT STUDENT</div>
-    
     <div class="small-btn-row">
-      <div class="btn small-btn delete-btn" onclick="deleteStudent('section1')">Absent</div>
+      <div class="btn small-btn delete-btn" onclick="absent('section1')">Absent</div>
       <div class="btn small-btn reset-btn" onclick="resetPool('section1')">Reset Pool</div>
     </div>
-    
     <div id="student1" class="student-box">---</div>
   </div>
 
   <div class="section-container">
-    <div id="section2" class="custom-select" onclick="toggleOptions('section2')">Select Section</div>
+    <div id="section2" class="custom-select" onclick="toggle('section2-options')">Select Section</div>
     <div id="section2-options" class="custom-options"></div>
-    
     <div class="btn next-btn" onclick="nextStudent('section2')">NEXT STUDENT</div>
-    
     <div class="small-btn-row">
-      <div class="btn small-btn delete-btn" onclick="deleteStudent('section2')">Absent</div>
+      <div class="btn small-btn delete-btn" onclick="absent('section2')">Absent</div>
       <div class="btn small-btn reset-btn" onclick="resetPool('section2')">Reset Pool</div>
     </div>
-    
     <div id="student2" class="student-box">---</div>
   </div>
 
-  <script>
-    // YOUR GOOGLE SHEET CSV URL
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9nE9pp-Lk2y4nS7WFocx5P8tW2pJjw6m9t95n78accs0-9GymgaoG3d0Mfg4hiS8x3LFoYhkqVS7C/pub?output=csv";
-    
-    let masterData = {}; // Stores { "SectionName": ["Student A", "Student B"] }
-    const selectorIds = ["section1", "section2"];
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9nE9pp-Lk2y4nS7WFocx5P8tW2pJjw6m9t95n78accs0-9GymgaoG3d0Mfg4hiS8x3LFoYhkqVS7C/pub?output=csv";
+  let master = {};
+  let history = JSON.parse(localStorage.getItem("selector_history")) || [];
 
-    async function loadFromSheets() {
-      const status = document.getElementById('status');
-      status.textContent = "Syncing...";
-      
-      try {
-        const response = await fetch(CSV_URL);
-        const text = await response.text();
-        const rows = text.split('\n').slice(1); // Skip header row
-
-        masterData = {};
-        rows.forEach(row => {
-          const cols = row.split(',').map(c => c.replace(/"/g, "").trim());
-          if (cols.length >= 3) {
-            const name = `${cols[1]} ${cols[0]}`; // First Last
-            const sec = cols[2];
-            if (!masterData[sec]) masterData[sec] = [];
-            masterData[sec].push(name);
-          }
-        });
-
-        // Save to cache
-        Object.keys(masterData).forEach(s => localStorage.setItem(s + "_master", JSON.stringify(masterData[s])));
-        
-        setupUI();
-        status.textContent = "Synced: " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      } catch (e) {
-        status.textContent = "Offline Mode Active";
-        loadFromLocalStorage();
-      }
-    }
-
-    function loadFromLocalStorage() {
-      Object.keys(localStorage).forEach(key => {
-        if (key.endsWith("_master")) {
-          const sec = key.replace("_master", "");
-          masterData[sec] = JSON.parse(localStorage.getItem(key));
+  async function loadFromSheets() {
+    try {
+      const res = await fetch(CSV_URL);
+      const text = await res.text();
+      const rows = text.split('\n').slice(1);
+      master = {};
+      rows.forEach(r => {
+        const c = r.split(',').map(v => v.replace(/"/g, "").trim());
+        if(c.length >= 3) {
+          if(!master[c[2]]) master[c[2]] = [];
+          master[c[2]].push(`${c[1]} ${c[0]}`);
         }
       });
-      setupUI();
-    }
+      Object.keys(master).forEach(k => localStorage.setItem(k + "_m", JSON.stringify(master[k])));
+      render();
+    } catch(e) { loadLocal(); }
+  }
 
-    function setupUI() {
-      selectorIds.forEach(id => {
-        const optDiv = document.getElementById(id + "-options");
-        optDiv.innerHTML = "";
-        
-        Object.keys(masterData).sort().forEach(sec => {
-          const div = document.createElement('div');
-          div.className = 'custom-option';
-          div.textContent = sec;
-          div.onclick = () => selectSection(id, sec);
-          optDiv.appendChild(div);
-        });
+  function loadLocal() {
+    Object.keys(localStorage).forEach(k => {
+      if(k.endsWith("_m")) master[k.replace("_m", "")] = JSON.parse(localStorage.getItem(k));
+    });
+    render();
+  }
 
-        const lastSec = localStorage.getItem(id) || Object.keys(masterData)[0];
-        if (lastSec) selectSection(id, lastSec);
+  function render() {
+    ["section1", "section2"].forEach(id => {
+      const opt = document.getElementById(id + "-options");
+      opt.innerHTML = "";
+      Object.keys(master).sort().forEach(s => {
+        const d = document.createElement('div');
+        d.className = 'custom-option';
+        d.textContent = s;
+        d.onclick = () => {
+          document.getElementById(id).textContent = s;
+          opt.style.display = 'none';
+          localStorage.setItem(id, s);
+        };
+        opt.appendChild(d);
       });
-    }
+      const saved = localStorage.getItem(id) || Object.keys(master)[0];
+      if(saved) document.getElementById(id).textContent = saved;
+    });
+    updateHistoryUI();
+  }
 
-    function selectSection(id, sec) {
-      document.getElementById(id).textContent = sec;
-      document.getElementById(id + "-options").style.display = "none";
-      localStorage.setItem(id, sec);
-      const lastPick = localStorage.getItem(sec + "_last") || "Ready";
-      document.getElementById("student" + id.slice(-1)).textContent = lastPick;
-    }
+  function nextStudent(id) {
+    const sec = document.getElementById(id).textContent;
+    if(!master[sec]) return;
+    let pool = JSON.parse(localStorage.getItem(sec + "_p")) || [];
+    if(pool.length === 0) pool = [...master[sec]];
+    
+    const idx = Math.floor(Math.random() * pool.length);
+    const picked = pool.splice(idx, 1)[0];
+    localStorage.setItem(sec + "_p", JSON.stringify(pool));
 
-    function toggleOptions(id) {
-      const el = document.getElementById(id + "-options");
-      const isVisible = el.style.display === "block";
-      document.querySelectorAll('.custom-options').forEach(d => d.style.display = 'none');
-      el.style.display = isVisible ? "none" : "block";
-    }
+    const box = document.getElementById("student" + id.slice(-1));
+    box.textContent = picked;
+    box.classList.remove("pop-in");
+    void box.offsetWidth;
+    box.classList.add("pop-in");
 
-    function nextStudent(id) {
-      const sec = document.getElementById(id).textContent;
-      if (!masterData[sec]) return;
+    // History Logic
+    const entry = { name: picked, section: sec, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+    history.unshift(entry);
+    if(history.length > 5) history.pop();
+    localStorage.setItem("selector_history", JSON.stringify(history));
+    updateHistoryUI();
+  }
 
-      const poolKey = sec + "_pool";
-      let pool = JSON.parse(localStorage.getItem(poolKey)) || [];
+  function updateHistoryUI() {
+    const log = document.getElementById("history-log");
+    if(history.length === 0) return;
+    log.innerHTML = history.map(h => `
+      <div class="history-item">
+        <span>${h.name} <span class="history-tag">(${h.section})</span></span>
+        <span style="color:#999; font-size:3vw">${h.time}</span>
+      </div>
+    `).join('');
+  }
 
-      if (pool.length === 0) pool = [...masterData[sec]];
+  function absent(id) {
+    const name = document.getElementById("student" + id.slice(-1)).textContent;
+    const sec = document.getElementById(id).textContent;
+    if(name === "---" || !confirm(`Remove ${name} from ${sec} for now?`)) return;
+    master[sec] = master[sec].filter(s => s !== name);
+    let p = JSON.parse(localStorage.getItem(sec + "_p")) || [];
+    localStorage.setItem(sec + "_p", JSON.stringify(p.filter(s => s !== name)));
+    document.getElementById("student" + id.slice(-1)).textContent = "---";
+  }
 
-      const idx = Math.floor(Math.random() * pool.length);
-      const picked = pool.splice(idx, 1)[0];
+  function resetPool(id) {
+    const sec = document.getElementById(id).textContent;
+    if(confirm(`Refill pool for ${sec}?`)) localStorage.removeItem(sec + "_p");
+  }
 
-      localStorage.setItem(poolKey, JSON.stringify(pool));
-      localStorage.setItem(sec + "_last", picked);
+  function toggle(id) {
+    const el = document.getElementById(id);
+    const vis = el.style.display === 'block';
+    document.querySelectorAll('.custom-options').forEach(d => d.style.display = 'none');
+    el.style.display = vis ? 'none' : 'block';
+  }
 
-      const box = document.getElementById("student" + id.slice(-1));
-      box.textContent = picked;
-      box.classList.remove("pop-in");
-      void box.offsetWidth; // Trigger reflow
-      box.classList.add("pop-in");
-    }
-
-    function deleteStudent(id) {
-      const sec = document.getElementById(id).textContent;
-      const last = localStorage.getItem(sec + "_last");
-      if (!last || last === "Ready") return;
-
-      if (confirm(`Remove ${last} for this session?`)) {
-        masterData[sec] = masterData[sec].filter(s => s !== last);
-        let pool = JSON.parse(localStorage.getItem(sec + "_pool")) || [];
-        pool = pool.filter(s => s !== last);
-        localStorage.setItem(sec + "_pool", JSON.stringify(pool));
-        document.getElementById("student" + id.slice(-1)).textContent = "---";
-      }
-    }
-
-    function resetPool(id) {
-      const sec = document.getElementById(id).textContent;
-      if (confirm(`Reset pool for ${sec}?`)) {
-        localStorage.removeItem(sec + "_pool");
-        document.getElementById("student" + id.slice(-1)).textContent = "Reset!";
-      }
-    }
-
-    // Close dropdowns on outside click
-    window.onclick = (e) => {
-      if (!e.target.matches('.custom-select')) {
-        document.querySelectorAll('.custom-options').forEach(d => d.style.display = 'none');
-      }
-    };
-
-    // Register Service Worker for PWA
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js").catch(console.error);
-    }
-
-    loadFromSheets();
-  </script>
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+  loadFromSheets();
+</script>
 </body>
 </html>
