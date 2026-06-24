@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Selector Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2196f3">
+  <link rel="apple-touch-icon" href="icon-512.png">
+
+  <style>
+    :root {
+      --primary: #2196f3;
+      --success: #4caf50;
+      --danger: #f44336;
+      --warning: #ff9800;
+      --bg: #f8f9fa;
+    }
+
+    * { box-sizing: border-box; } /* Prevents alignment issues globally */
+
+    body {
+      font-family: -apple-system, system-ui, sans-serif;
+      padding: 5vw;
+      background: var(--bg);
+      text-align: center;
+      margin: 0;
+    }
+
+    h1 { font-size: 7vw; margin: 20px 0 10px; color: #333; }
+
+    /* Sync Button & Status */
+    .sync-btn {
+      background: var(--success);
+      color: white;
+      padding: 10px 20px;
+      font-size: 3.5vw;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .status-text { font-size: 3vw; color: #888; margin-bottom: 20px; display: block; }
+
+    /* History Log */
+    .history-container {
+      background: #fff;
+      margin: 0 auto 20px;
+      max-width: 500px;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+
+    .history-title { font-size: 3.2vw; font-weight: bold; color: #999; text-transform: uppercase; }
+    .history-item { font-size: 3.8vw; padding: 6px 0; border-bottom: 1px solid #f8f8f8; display: flex; justify-content: space-between; }
+    .history-tag { color: var(--primary); font-weight: bold; }
+
+    /* Section Containers */
+    .section-container {
+      background: white;
+      margin: 0 auto 30px;
+      max-width: 500px;
+      padding: 25px 15px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    /* Unified Button Sizing */
+    .custom-select, .next-btn {
+      width: 100%; /* Relative to the container padding */
+      margin: 10px 0;
+      padding: 18px;
+      font-size: 5vw;
+      font-weight: bold;
+      border-radius: 12px;
+      display: block;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .custom-select {
+      background: #fff;
+      border: 2px solid var(--primary);
+      color: #333;
+      position: relative;
+    }
+
+    .next-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+    }
+
+    .next-btn:active { transform: scale(0.97); }
+
+    /* Dropdown Options */
+    .custom-options {
+      display: none;
+      background: #fff;
+      border: 2px solid var(--primary);
+      border-top: none;
+      max-height: 200px;
+      overflow-y: auto;
+      border-radius: 0 0 12px 12px;
+      margin-top: -12px; /* Pull up to join the select box */
+    }
+
+    .custom-option { padding: 15px; border-top: 1px solid #eee; font-size: 4.5vw; }
+
+    /* Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+    .progress-fill { width: 0%; height: 100%; background: var(--success); transition: width 0.4s ease; }
+
+    /* Action Row */
+    .small-btn-row { display: flex; gap: 10px; margin-top: 15px; }
+    .small-btn { flex: 1; padding: 12px; font-size: 3.5vw; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .delete-btn { background: var(--danger); }
+    .reset-btn { background: var(--warning); }
+
+    /* Result Area */
+    .student-box { margin-top: 20px; font-weight: 800; font-size: 9vw; color: #111; min-height: 1.3em; }
+    .pop-in { animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
+    @keyframes pop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 Selector</h1>
+  
+  <div class="sync-btn" onclick="loadFromSheets()">🔄 Sync List</div>
+  <span id="status" class="status-text">Connecting...</span>
+
+  <div class="history-container">
+    <span class="history-title">Recent Activity</span>
+    <div id="history-log"><div class="history-item" style="color:#ccc">Waiting for selection...</div></div>
+  </div>
+
+  <div class="section-container">
+    <div id="section1" class="custom-select" onclick="toggle('section1-options')">Select Section</div>
+    <div id="section1-options" class="custom-options"></div>
+    
+    <div class="next-btn" onclick="nextStudent('section1')">NEXT STUDENT</div>
+    
+    <div class="progress-track"><div id="progress1" class="progress-fill"></div></div>
+    
+    <div class="small-btn-row">
+      <div class="small-btn delete-btn" onclick="absent('section1')">Absent</div>
+      <div class="small-btn reset-btn" onclick="resetPool('section1')">Reset</div>
+    </div>
+    <div id="student1" class="student-box">---</div>
+  </div>
+
+  <div class="section-container">
+    <div id="section2" class="custom-select" onclick="toggle('section2-options')">Select Section</div>
+    <div id="section2-options" class="custom-options"></div>
+    
+    <div class="next-btn" onclick="nextStudent('section2')">NEXT STUDENT</div>
+    
+    <div class="progress-track"><div id="progress2" class="progress-fill"></div></div>
+    
+    <div class="small-btn-row">
+      <div class="small-btn delete-btn" onclick="absent('section2')">Absent</div>
+      <div class="small-btn reset-btn" onclick="resetPool('section2')">Reset</div>
+    </div>
+    <div id="student2" class="student-box">---</div>
+  </div>
+
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9nE9pp-Lk2y4nS7WFocx5P8tW2pJjw6m9t95n78accs0-9GymgaoG3d0Mfg4hiS8x3LFoYhkqVS7C/pub?output=csv";
+  let master = {};
+  let history = JSON.parse(localStorage.getItem("selector_history")) || [];
+
+  async function loadFromSheets() {
+    const st = document.getElementById('status');
+    st.textContent = "Syncing...";
+    try {
+      const res = await fetch(CSV_URL);
+      const text = await res.text();
+      const rows = text.split('\n').slice(1);
+      master = {};
+      rows.forEach(r => {
+        const c = r.split(',').map(v => v.replace(/"/g, "").trim());
+        if(c.length >= 3) {
+          if(!master[c[2]]) master[c[2]] = [];
+          master[c[2]].push(`${c[1]} ${c[0]}`);
+        }
+      });
+      Object.keys(master).forEach(k => localStorage.setItem(k + "_m", JSON.stringify(master[k])));
+      render();
+      st.textContent = "Last Sync: " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    } catch(e) { loadLocal(); st.textContent = "Offline Mode"; }
+  }
+
+  function loadLocal() {
+    Object.keys(localStorage).forEach(k => {
+      if(k.endsWith("_m")) master[k.replace("_m", "")] = JSON.parse(localStorage.getItem(k));
+    });
+    render();
+  }
+
+  function render() {
+    ["section1", "section2"].forEach(id => {
+      const opt = document.getElementById(id + "-options");
+      opt.innerHTML = "";
+      Object.keys(master).sort().forEach(s => {
+        const d = document.createElement('div');
+        d.className = 'custom-option';
+        d.textContent = s;
+        d.onclick = () => {
+          document.getElementById(id).textContent = s;
+          opt.style.display = 'none';
+          localStorage.setItem(id, s);
+          updateProgress(id, s);
+        };
+        opt.appendChild(d);
+      });
+      const saved = localStorage.getItem(id) || Object.keys(master)[0];
+      if(saved) {
+        document.getElementById(id).textContent = saved;
+        updateProgress(id, saved);
+      }
+    });
+    updateHistoryUI();
+  }
+
+  function nextStudent(id) {
+    const sec = document.getElementById(id).textContent;
+    if(!master[sec]) return;
+    let pool = JSON.parse(localStorage.getItem(sec + "_p")) || [];
+    if(pool.length === 0) pool = [...master[sec]];
+    
+    const picked = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+    localStorage.setItem(sec + "_p", JSON.stringify(pool));
+
+    const box = document.getElementById("student" + id.slice(-1));
+    box.textContent = picked;
+    box.classList.remove("pop-in");
+    void box.offsetWidth;
+    box.classList.add("pop-in");
+
+    history.unshift({ name: picked, section: sec, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+    if(history.length > 5) history.pop();
+    localStorage.setItem("selector_history", JSON.stringify(history));
+    
+    updateHistoryUI();
+    updateProgress(id, sec);
+  }
+
+  function updateHistoryUI() {
+    const log = document.getElementById("history-log");
+    if(history.length > 0) {
+      log.innerHTML = history.map(h => `
+        <div class="history-item">
+          <span>${h.name} <span class="history-tag">(${h.section})</span></span>
+          <span style="color:#999; font-size:3vw">${h.time}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  function updateProgress(id, sec) {
+    if(!master[sec]) return;
+    const pool = JSON.parse(localStorage.getItem(sec + "_p")) || [];
+    const total = master[sec].length;
+    const called = total - (pool.length === 0 ? 0 : pool.length);
+    const pBar = document.getElementById("progress" + id.slice(-1));
+    pBar.style.width = ((called / total) * 100) + "%";
+  }
+
+  function absent(id) {
+    const box = document.getElementById("student" + id.slice(-1));
+    const sec = document.getElementById(id).textContent;
+    if(box.textContent === "---" || !confirm(`Mark ${box.textContent} as absent?`)) return;
+    master[sec] = master[sec].filter(s => s !== box.textContent);
+    let p = JSON.parse(localStorage.getItem(sec + "_p")) || [];
+    localStorage.setItem(sec + "_p", JSON.stringify(p.filter(s => s !== box.textContent)));
+    box.textContent = "---";
+    updateProgress(id, sec);
+  }
+
+  function resetPool(id) {
+    const sec = document.getElementById(id).textContent;
+    if(confirm(`Reset pool for ${sec}?`)) {
+      localStorage.removeItem(sec + "_p");
+      updateProgress(id, sec);
+    }
+  }
+
+  function toggle(id) {
+    const el = document.getElementById(id);
+    const vis = el.style.display === 'block';
+    document.querySelectorAll('.custom-options').forEach(d => d.style.display = 'none');
+    el.style.display = vis ? 'none' : 'block';
+  }
+
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+  loadFromSheets();
+</script>
+</body>
+</html>
