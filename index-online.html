@@ -133,13 +133,11 @@
     .pop-in { animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.49); }
     @keyframes pop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <h1>🎓 Selector</h1>
 
-<div class="sync-btn" onclick="chooseStudentFile()">📂 Choose Student File</div>
-<input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none">
+<div class="sync-btn" onclick="loadFromSheets()">🔄 Sync List</div>
 <span id="status" class="status-text">Connecting...</span>
 
 <div class="history-container">
@@ -172,30 +170,8 @@
 </div>
 
 <script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ9nE9pp-Lk2y4nS7WFocx5P8tW2pJjw6m9t95n78accs0-9GymgaoG3d0Mfg4hiS8x3LFoYhkqVS7C/pub?output=csv";
 let master = {};
-
-let fileHandle=null;
-async function chooseStudentFile(){
- if(window.showOpenFilePicker){
-  [fileHandle]=await window.showOpenFilePicker({types:[{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx','.xls']}}]});
-  window._studentHandle=fileHandle;
-  loadChosenFile();
- } else document.getElementById('excelFile').click();
-}
-async function loadChosenFile(){
- if(!fileHandle)return;
- const f=await fileHandle.getFile();
- const r=new FileReader();
- r.onload=e=>{
- const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
- const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
- master={};rows.slice(1).forEach(c=>{if(c.length>=3){(master[c[2]]??=[]).push(`${c[1]} ${c[0]}`)}});
- Object.keys(master).forEach(k=>localStorage.setItem(k+"_m",JSON.stringify(master[k])));
- render();status.textContent='Loaded: '+f.name;
- };
- r.readAsArrayBuffer(f);
-}
-
 let history = JSON.parse(localStorage.getItem("selector_history")) || [];
 
 function highlightSection(activeId) {
@@ -208,23 +184,37 @@ function highlightSection(activeId) {
   document.getElementById(activeId).classList.add("active-section");
 }
 
-function loadFromSheets(){loadLocal();document.getElementById('status').textContent='Offline Mode';}
-document.getElementById('excelFile').addEventListener('change',function(e){
-const f=e.target.files[0];if(!f)return;
-const r=new FileReader();
-r.onload=function(ev){
-const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
-master={};
-rows.slice(1).forEach(c=>{if(c.length>=3){if(!master[c[2]])master[c[2]]=[];master[c[2]].push(`${c[1]} ${c[0]}`);}});
-Object.keys(master).forEach(k=>localStorage.setItem(k+"_m",JSON.stringify(master[k])));
-render();document.getElementById('status').textContent='Imported: '+f.name;};
-r.readAsArrayBuffer(f);
-});
-function loadLocal(){
-Object.keys(localStorage).forEach(k=>{if(k.endsWith('_m'))master[k.replace('_m','')]=JSON.parse(localStorage.getItem(k));});
-render();
+async function loadFromSheets() {
+  const st = document.getElementById('status');
+  st.textContent = "Syncing...";
+  try {
+    const res = await fetch(CSV_URL);
+    const text = await res.text();
+    const rows = text.split('\n').slice(1);
+    master = {};
+    rows.forEach(r => {
+      const c = r.split(',').map(v => v.replace(/"/g, "").trim());
+      if(c.length >= 3) {
+        if(!master[c[2]]) master[c[2]] = [];
+        master[c[2]].push(`${c[1]} ${c[0]}`);
+      }
+    });
+    Object.keys(master).forEach(k => localStorage.setItem(k + "_m", JSON.stringify(master[k])));
+    render();
+    st.textContent = "Last Sync: " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  } catch(e) {
+    loadLocal();
+    st.textContent = "Offline Mode";
+  }
 }
+
+function loadLocal() {
+  Object.keys(localStorage).forEach(k => {
+    if(k.endsWith("_m")) master[k.replace("_m", "")] = JSON.parse(localStorage.getItem(k));
+  });
+  render();
+}
+
 function render() {
   ["section1", "section2"].forEach(id => {
     const opt = document.getElementById(id + "-options");
